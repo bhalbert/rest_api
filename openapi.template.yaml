@@ -226,6 +226,28 @@ paths:
       responses:
         200:
           description: Successful response
+      x-code-samples:
+        - lang: python (client)
+          source: |
+            '''A python script which outputs a CSV file of all genetic evidences associated with the disease passed as a command line argument.'''
+
+            from opentargets import OpenTargetsClient  
+            import argparse  
+            import pandas as pd
+
+            parser = argparse.ArgumentParser(description='Retrieve SNPs and other genetic associations which are linked to a given disease')  
+            parser.add_argument('disease',  
+                                help='the disease of interest')
+
+
+            args = parser.parse_args()  
+            ot = OpenTargetsClient()
+
+            e_for_disease = ot.get_evidence_for_disease(args.disease)  
+            e_for_disease.filter(datatype='genetic_association')  
+            print(e_for_disease)  
+            outfilepath = 'genetic_evidence_associated_with_' + args.disease + '.csv'  
+            pd.DataFrame([x['unique_association_fields'] for x in e_for_disease]).to_csv(outfilepath)
     post:
       operationId: postEvidenceFilter
       tags:
