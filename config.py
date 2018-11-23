@@ -52,14 +52,10 @@ class Config:
     API_VERSION = env('API_VERSION', cast=str)
     API_VERSION_MINOR = env('API_VERSION_MINOR', cast=str)
 
-    ## obsolete? TODO: remove
-    # PUBLIC_API_BASE_PATH = '/api/public/v'
-    # PRIVATE_API_BASE_PATH = '/api/private/v'
-
     ## [key configurations]
     ELASTICSEARCH_URL = env('ELASTICSEARCH_URL', default='')
-    DATA_VERSION = env('OPENTARGETS_DATA_VERSION', default='17.12') # TODO - would be better to throw an error instead of falling back to a default if this parameter is not set. 
-
+    # TODO - would be better to throw an error instead of falling back to a default if this parameter is not set.
+    DATA_VERSION = env('OPENTARGETS_DATA_VERSION', default='18.08')
     # tagged version from expression_hierarchy repository must have same DATA_VERSION tag
     ES_TISSUE_MAP_URL = 'https://raw.githubusercontent.com/opentargets/expression_hierarchy/{0}/process/map_with_efos.json'
     ES_TISSUE_MAP = None
@@ -114,6 +110,20 @@ class Config:
     DATATYPE_ORDERED = ['genetic_association', 'somatic_mutation', 'known_drug', 'rna_expression', 'affected_pathway',
                         'animal_model', 'literature']
     # DATATYPES['protein_expression'] = ['hpa']
+
+    # Allow addition of custom datatypes from environment variable
+    # Environment variable must be named CUSTOM_DATASOURCE
+    # Format is new_source:type e.g. genomics_england_tiering:genetic_association
+    # Multiple custom data sources of the same type can be passed as a comma-separated list
+    env_var = env('CUSTOM_DATASOURCE', default='')
+    if env_var:
+        for source_and_type in env_var.split(','):
+            source, datatype = source_and_type.split(':')
+            if datatype not in DATATYPES:
+                print "Cannot add env_var as %s is not a recognised datatype" % datatype
+            else:
+                DATATYPES[datatype].append(source)
+                print "Added %s to list of %s data sources, list is now " % (source, datatype), DATATYPES[datatype]
 
     DATASOURCE_SCORING_METHOD = defaultdict(lambda: ScoringMethods.SUM)
     # DATASOURCE_SCORING_METHOD['phenodigm'] = ScoringMethods.MAX

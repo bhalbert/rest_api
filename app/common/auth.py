@@ -1,9 +1,8 @@
 from datetime import datetime
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, BadData
 from itsdangerous import SignatureExpired, BadSignature
-from flask import current_app, request, make_response
-from flask.ext import restful
-from flask.ext.restful import abort, wraps
+from flask import current_app, request
+from flask_restful import abort, wraps
 import base64
 import hashlib
 from Crypto import Random
@@ -41,11 +40,9 @@ class AuthKey(object):
         return '|'.join((self._AUTH_KEY_NAMESPACE,self.id))
 
     def get_loaded_data(self):
-        data = current_app.extensions['redis-user'].hgetall(self.get_key())
+        data = current_app.extensions['redis-user'].get(self.get_key())
         if data:
-            self.__dict__.update(data)
-
-
+            self.__dict__.update(json.loads(data))
 
 
 class AESCipher:
