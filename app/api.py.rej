@@ -1,0 +1,9 @@
+diff a/app/api.py b/app/api.py	(rejected hunks)
+@@ -31,6 +31,7 @@
+     from app.resources.freetextsearch import FreeTextSearch, BestHitSearch, AutoComplete, QuickSearch
+     from app.resources import association
+     from app.resources.expression import Expression
++<<<<<<< HEAD
+     from app.resources.datasets import DatasetList, Datasets
+     from app.resources.proxy import ProxyEnsembl, ProxyGXA, ProxyPDB, ProxyGeneric
+ >>>>>>> master-with-Richards-changes
