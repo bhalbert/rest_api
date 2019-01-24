@@ -102,5 +102,4 @@ def create_api(app, api_version = '0.0', specpath = '' ):
                      '/private/relation/disease/<string:disease_id>')
     api.add_resource(EnrichmentTargets,
                      '/private/enrichment/targets')
-
     return api
