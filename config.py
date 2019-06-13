@@ -11,8 +11,6 @@ from logging import getLogger
 from envparse import env
 
 from pythonjsonlogger import jsonlogger
-
-# from app.common.auth import AuthKey
 from app.common.scoring_conf import ScoringMethods
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -55,7 +53,7 @@ class Config:
     ## [key configurations]
     ELASTICSEARCH_URL = env('ELASTICSEARCH_URL', default='')
     # TODO - would be better to throw an error instead of falling back to a default if this parameter is not set.
-    DATA_VERSION = env('OPENTARGETS_DATA_VERSION', default='18.08')
+    DATA_VERSION = env('OPENTARGETS_DATA_VERSION', default='19.04')
     # tagged version from expression_hierarchy repository must have same DATA_VERSION tag
     ES_TISSUE_MAP_URL = 'https://raw.githubusercontent.com/opentargets/expression_hierarchy/{0}/process/map_with_efos.json'
     ES_TISSUE_MAP = None
@@ -73,6 +71,9 @@ class Config:
 
     ELASTICSEARCH_DATA_INDEX_NAME = ES_PREFIX(name='evidence-data', suffix='*')
     ELASTICSEARCH_DATA_DOC_NAME = 'evidencestring'
+
+    ELASTICSEARCH_DRUG_INDEX_NAME = ES_PREFIX(name='drug-data')
+    ELASTICSEARCH_DRUG_DOC_NAME = 'drug'
     ELASTICSEARCH_EFO_LABEL_INDEX_NAME = ES_PREFIX(name='efo-data')
     ELASTICSEARCH_EFO_LABEL_DOC_NAME = 'efo'
     ELASTICSEARCH_ECO_INDEX_NAME = ES_PREFIX(name='eco-data')
@@ -102,7 +103,7 @@ class Config:
     DATATYPES['rna_expression'] = ['expression_atlas', ]
     DATATYPES['genetic_association'] = ['uniprot', 'gwas_catalog', 'phewas_catalog', 'twentythreeandme', 'eva',
                                         'uniprot_literature', 'gene2phenotype', 'genomics_england']
-    DATATYPES['affected_pathway'] = ['reactome', 'slapenrich', 'progeny']
+    DATATYPES['affected_pathway'] = ['reactome', 'slapenrich', 'progeny', 'sysbio', 'crispr']
     DATATYPES['animal_model'] = ['phenodigm', ]
     DATATYPES['somatic_mutation'] = ['cancer_gene_census', 'eva_somatic', 'intogen', 'uniprot_somatic']
     DATATYPES['known_drug'] = ['chembl', ]
@@ -139,18 +140,13 @@ class Config:
                       }
     REDIS_SERVER_PATH = env('REDIS_SERVER_PATH', default='/tmp/api_redis.db')
 
-    USAGE_LIMIT_DEFAULT_SHORT = env.int('USAGE_LIMIT_DEFAULT_SHORT', default='3000',)
-    USAGE_LIMIT_DEFAULT_LONG = env.int('USAGE_LIMIT_DEFAULT_LONG', default='1200000')
     SECRET_PATH = env('SECRET_PATH', default='app/authconf/')
-    SECRET_RATE_LIMIT_FILE = env('SECRET_RATE_LIMIT_FILE', default='rate_limit.csv')
     SECRET_IP_RESOLVER_FILE = env('SECRET_IP_RESOLVER_FILE', default='ip_list.csv')
-    USAGE_LIMIT_PATH = os.path.join(SECRET_PATH, SECRET_RATE_LIMIT_FILE)
     IP_RESOLVER_LIST_PATH = os.path.join(SECRET_PATH, SECRET_IP_RESOLVER_FILE)
 
     NO_CACHE_PARAMS = 'no_cache'
 
     MIXPANEL_TOKEN = env('MIXPANEL_TOKEN', default=None)
-    GITHUB_AUTH_TOKEN = env('GITHUB_AUTH_TOKEN', default=None)
 
     @staticmethod
     def init_app(app):

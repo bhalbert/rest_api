@@ -1,10 +1,6 @@
 import json
-import time
-from datetime import datetime
 
-from app.common.signals import LogApiCallWeight
 from app.common.datatypes import DataTypes
-from app.common.rate_limit import increment_call_rate, RateLimiter, ceil_dt_to_future_time
 from app.common.scoring_conf import ScoringMethods
 from config import Config
 
@@ -168,6 +164,70 @@ class SearchMetadataObject(object):
         # if self.search_metadata:
         #     self.data['search_metadata'] = self.search_metadata
 
+
+class TherapeuticArea(object):
+
+    def __init__(self):
+        self.data_version=Config.DATA_VERSION
+
+    def __str__(self):
+        return json.dumps(self.__dict__)
+
+    def add_therapeuticareas(self, res):
+        datatypes = []
+        index = 0
+        for bucket in res['aggregations']['therapeutic_labels']['buckets']:
+            datasources = {}
+            datasources['label'] = bucket['key']
+            datasources['code'] = res['aggregations']['therapeutic_codes']['buckets'][index]['key']
+            datatypes.append(datasources)
+            index=index+1
+
+        self.therapeuticareas = datatypes
+        self.total = str(index)
+
+class DataMetrics(object):
+
+    def __init__(self):
+        self.data_version=Config.DATA_VERSION
+
+    def __str__(self):
+        return json.dumps(self.__dict__)
+
+    def add_genes(self, res):
+        self.genes = res['aggregations']
+
+    def add_evidences(self, res):
+        self.evidences = res['aggregations']
+
+    def add_evidencestring(self, res):
+        datatypes = {}
+        for bucket in res['aggregations']['data']['buckets']:
+            datatypes[bucket['key']]={'total':bucket['doc_count']}
+            datasources = {}
+            for ds_bucket in bucket['datasources']['buckets']:
+                datasources[ds_bucket['key']]={'total':ds_bucket['doc_count']}
+                datatypes[bucket['key']]['datasources']=datasources
+
+        self.evidencestrings = dict(total = res['hits']['total'],
+                                    datatypes= datatypes)
+
+    def add_associations(self, res, known_datatypes):
+        datatypes = {}
+        for bucket in res['aggregations']['data']['buckets']:
+            datatypes[bucket['key']]={'total':bucket['doc_count']}
+            datasources = {}
+            for ds_bucket in bucket['datasources']['buckets']:
+                try:
+                    if known_datatypes.is_datasources_in_datatype(ds_bucket['key'], bucket['key']):
+                        datasources[ds_bucket['key']]={'total':ds_bucket['doc_count']}
+                        datatypes[bucket['key']]['datasources']=datasources
+                except KeyError:
+                    pass
+
+
+        self.associations = dict(total = res['hits']['total'],
+                                 datatypes= datatypes)
 
 
 class DataStats(object):
