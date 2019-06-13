@@ -32,6 +32,7 @@ def create_api(app, api_version = '0.0', specpath = '' ):
     from app.resources.freetextsearch import FreeTextSearch, BestHitSearch, AutoComplete, QuickSearch
     from app.resources import association
     from app.resources.expression import Expression
+    from app.resources.datasets import DatasetList, Datasets
     from app.resources.cache import ClearCache
     from app.resources.utils import Ping, Version
     from app.resources.relation import RelationTargetSingle, RelationDiseaseSingle
