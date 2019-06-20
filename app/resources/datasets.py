@@ -8,7 +8,6 @@ import flask_restful as restful
 from flask_restful import abort, fields, marshal,marshal_with
 from flask_restful import reqparse
 from app.common.auth import is_authenticated
-from app.common.rate_limit import rate_limit
 from app.common.response_templates import CTTVResponse
 import time
 
@@ -17,7 +16,6 @@ __author__ = 'gkos-bio'
 class Datasets(restful.Resource):
 
     @is_authenticated
-    @rate_limit
     def get(self):
         """
         Given a dataset name and an ES query, returns all documents from this dataset
@@ -42,7 +40,6 @@ class Datasets(restful.Resource):
         return CTTVResponse.OK(res)
 
     @is_authenticated
-    @rate_limit
     def post(self):
         """
         Given a list of subjects id, returns related entities
@@ -71,7 +68,6 @@ class Datasets(restful.Resource):
 class DatasetList(restful.Resource):
 
     @is_authenticated
-    @rate_limit
     def get(self):
         """
         Get a list of datasets stored in our back-end
