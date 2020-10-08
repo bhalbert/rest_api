@@ -53,7 +53,7 @@ class Config:
     ## [key configurations]
     ELASTICSEARCH_URL = env('ELASTICSEARCH_URL', default='')
     # TODO - would be better to throw an error instead of falling back to a default if this parameter is not set.
-    DATA_VERSION = env('OPENTARGETS_DATA_VERSION', default='19.04')
+    DATA_VERSION = env('OPENTARGETS_DATA_VERSION', default='20.09')
     # tagged version from expression_hierarchy repository must have same DATA_VERSION tag
     ES_TISSUE_MAP_URL = 'https://raw.githubusercontent.com/opentargets/expression_hierarchy/{0}/process/map_with_efos.json'
     ES_TISSUE_MAP = None
@@ -101,8 +101,8 @@ class Config:
     '''datatype configuration'''
     DATATYPES = defaultdict(lambda: "other")
     DATATYPES['rna_expression'] = ['expression_atlas', ]
-    DATATYPES['genetic_association'] = ['uniprot', 'gwas_catalog', 'phewas_catalog', 'twentythreeandme', 'eva',
-                                        'uniprot_literature', 'gene2phenotype', 'genomics_england']
+    DATATYPES['genetic_association'] = ['phewas_catalog', 'twentythreeandme', 'eva',
+                                        'uniprot_literature', 'gene2phenotype', 'genomics_england','ot_genetics_portal','clingen']
     DATATYPES['affected_pathway'] = ['reactome', 'slapenrich', 'progeny', 'sysbio', 'crispr']
     DATATYPES['animal_model'] = ['phenodigm', ]
     DATATYPES['somatic_mutation'] = ['cancer_gene_census', 'eva_somatic', 'intogen', 'uniprot_somatic']
