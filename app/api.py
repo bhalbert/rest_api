@@ -27,6 +27,7 @@ def create_api(app, api_version = '0.0', specpath = '' ):
     from app.resources.target import TargetInfo, TargetInfoSingle
     from app.resources import evidence
     from app.resources.efo import EfoLabelFromCode
+    from app.resources.drug import Drug
     from app.resources.evidenceontology import EcoLabelFromCode
     from app.resources.freetextsearch import FreeTextSearch, BestHitSearch, AutoComplete, QuickSearch
     from app.resources import association
@@ -38,6 +39,7 @@ def create_api(app, api_version = '0.0', specpath = '' ):
     from app.resources.relation import RelationTargetSingle, RelationDiseaseSingle
     from app.resources.stats import Stats
     from app.resources.metrics import Metrics
+    from app.resources.therapeuticarea import TherapeuticAreas
 
     # api.add_resource(AvailableGenes,
     #                  basepath+'/available-genes')
@@ -47,8 +49,12 @@ def create_api(app, api_version = '0.0', specpath = '' ):
     api.add_resource(evidence.FilterBy,
                      '/public/evidence/filter',
                       endpoint="evidence-filter"
-
                      )
+
+    api.add_resource(evidence.DrugEvidence,
+                     '/public/evidence/known_drug'
+                     )
+
     api.add_resource(association.Association,
                      '/public/association',
                      )
@@ -62,6 +68,8 @@ def create_api(app, api_version = '0.0', specpath = '' ):
                      '/private/disease',
                      endpoint="disease-facets"
                     )
+    api.add_resource(Drug,
+                     '/private/drug/<string:drug_id>')
     api.add_resource(EcoLabelFromCode,
                      '/private/eco/<string:code>')
     api.add_resource(TargetInfoSingle,
@@ -102,4 +110,6 @@ def create_api(app, api_version = '0.0', specpath = '' ):
                      '/private/relation/disease/<string:disease_id>')
     api.add_resource(EnrichmentTargets,
                      '/private/enrichment/targets')
+    api.add_resource(TherapeuticAreas,
+                     '/public/utils/therapeuticareas')
     return api

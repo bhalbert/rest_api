@@ -105,49 +105,55 @@ def create_app(config_name):
     else:
         es = None
     '''elasticsearch handlers'''
-    app.extensions['esquery'] = esQuery(es,
-                                        DataTypes(app),
-                                        DataSourceScoring(app),
-                                        index_data=app.config['ELASTICSEARCH_DATA_INDEX_NAME'],
-                                        index_efo=app.config['ELASTICSEARCH_EFO_LABEL_INDEX_NAME'],
-                                        index_eco=app.config['ELASTICSEARCH_ECO_INDEX_NAME'],
-                                        index_genename=app.config['ELASTICSEARCH_GENE_NAME_INDEX_NAME'],
-                                        index_expression=app.config['ELASTICSEARCH_EXPRESSION_INDEX_NAME'],
-                                        index_reactome=app.config['ELASTICSEARCH_REACTOME_INDEX_NAME'],
-                                        index_association=app.config['ELASTICSEARCH_DATA_ASSOCIATION_INDEX_NAME'],
-                                        index_search=app.config['ELASTICSEARCH_DATA_SEARCH_INDEX_NAME'],
-                                        index_relation=app.config['ELASTICSEARCH_DATA_RELATION_INDEX_NAME'],
-                                        docname_data=app.config['ELASTICSEARCH_DATA_DOC_NAME'],
-                                        docname_efo=app.config['ELASTICSEARCH_EFO_LABEL_DOC_NAME'],
-                                        docname_eco=app.config['ELASTICSEARCH_ECO_DOC_NAME'],
-                                        docname_genename=app.config['ELASTICSEARCH_GENE_NAME_DOC_NAME'],
-                                        docname_expression=app.config['ELASTICSEARCH_EXPRESSION_DOC_NAME'],
-                                        docname_reactome=app.config['ELASTICSEARCH_REACTOME_REACTION_DOC_NAME'],
-                                        docname_association=app.config['ELASTICSEARCH_DATA_ASSOCIATION_DOC_NAME'],
-                                        docname_search=app.config['ELASTICSEARCH_DATA_SEARCH_DOC_NAME'],
-                                        # docname_search_target=app.config['ELASTICSEARCH_DATA_SEARCH_TARGET_DOC_NAME'],
-                                        # docname_search_disease=app.config['ELASTICSEARCH_DATA_SEARCH_DISEASE_DOC_NAME'],
-                                        docname_relation=app.config['ELASTICSEARCH_DATA_RELATION_DOC_NAME'],
-                                        log_level=app.logger.getEffectiveLevel(),
-                                        cache=icache
-                                        )
+    app.extensions['esquery'] = esQuery(
+        es,
+        DataTypes(app),
+        DataSourceScoring(app),
+        index_data=app.config['ELASTICSEARCH_DATA_INDEX_NAME'],
+        index_drug=app.config['ELASTICSEARCH_DRUG_INDEX_NAME'],
+        index_efo=app.config['ELASTICSEARCH_EFO_LABEL_INDEX_NAME'],
+        index_eco=app.config['ELASTICSEARCH_ECO_INDEX_NAME'],
+        index_genename=app.config['ELASTICSEARCH_GENE_NAME_INDEX_NAME'],
+        index_expression=app.config['ELASTICSEARCH_EXPRESSION_INDEX_NAME'],
+        index_reactome=app.config['ELASTICSEARCH_REACTOME_INDEX_NAME'],
+        index_association=app.config['ELASTICSEARCH_DATA_ASSOCIATION_INDEX_NAME'],
+        index_search=app.config['ELASTICSEARCH_DATA_SEARCH_INDEX_NAME'],
+        index_relation=app.config['ELASTICSEARCH_DATA_RELATION_INDEX_NAME'],
+        docname_data=app.config['ELASTICSEARCH_DATA_DOC_NAME'],
+        docname_drug=app.config['ELASTICSEARCH_DRUG_DOC_NAME'],
+        docname_efo=app.config['ELASTICSEARCH_EFO_LABEL_DOC_NAME'],
+        docname_eco=app.config['ELASTICSEARCH_ECO_DOC_NAME'],
+        docname_genename=app.config['ELASTICSEARCH_GENE_NAME_DOC_NAME'],
+        docname_expression=app.config['ELASTICSEARCH_EXPRESSION_DOC_NAME'],
+        docname_reactome=app.config['ELASTICSEARCH_REACTOME_REACTION_DOC_NAME'],
+        docname_association=app.config['ELASTICSEARCH_DATA_ASSOCIATION_DOC_NAME'],
+        docname_search=app.config['ELASTICSEARCH_DATA_SEARCH_DOC_NAME'],
+        # docname_search_target=app.config['ELASTICSEARCH_DATA_SEARCH_TARGET_DOC_NAME'],
+        # docname_search_disease=app.config['ELASTICSEARCH_DATA_SEARCH_DISEASE_DOC_NAME'],
+        docname_relation=app.config['ELASTICSEARCH_DATA_RELATION_DOC_NAME'],
+        log_level=app.logger.getEffectiveLevel(),
+        cache=icache
+        )
 
     app.extensions['es_access_store'] = esStore(es,
-                                        eventlog_index=app.config['ELASTICSEARCH_LOG_EVENT_INDEX_NAME'],
-                                        ip2org=ip2org,
-                                        )
+        eventlog_index=app.config['ELASTICSEARCH_LOG_EVENT_INDEX_NAME'],
+        ip2org=ip2org,
+        )
+
     '''mixpanel handlers'''
     if Config.MIXPANEL_TOKEN:
         mp = Mixpanel(Config.MIXPANEL_TOKEN, consumer=AsyncBufferedConsumer())
         app.extensions['mixpanel']= mp
-        app.extensions['mp_access_store'] = MixPanelStore(mp,
-                                            ip2org=ip2org,
-                                            )
+        app.extensions['mp_access_store'] = MixPanelStore(
+            mp,
+            ip2org=ip2org,
+            )
 
 
-        app.extensions['proxy'] = ProxyHandler(allowed_targets=app.config['PROXY_SETTINGS']['allowed_targets'],
-                                               allowed_domains=app.config['PROXY_SETTINGS']['allowed_domains'],
-                                               allowed_request_domains=app.config['PROXY_SETTINGS']['allowed_request_domains'])
+        app.extensions['proxy'] = ProxyHandler(
+            allowed_targets=app.config['PROXY_SETTINGS']['allowed_targets'],
+            allowed_domains=app.config['PROXY_SETTINGS']['allowed_domains'],
+            allowed_request_domains=app.config['PROXY_SETTINGS']['allowed_request_domains'])
 
     # basepath = app.config['PUBLIC_API_BASE_PATH']+api_version
     # cors = CORS(app, resources=r'/api/*', allow_headers='Content-Type,Auth-Token')
@@ -205,19 +211,10 @@ def create_app(config_name):
 
 
     '''serve the static docs'''
+    openapi_def = yaml.load(file('app/static/openapi.template.yaml', 'r'))
+    app.logger.info('parsing swagger from app/static/openapi.template.yaml')
 
-    try:
-        '''
-        NOTE: this file gets created only at deployment time
-        '''
-        openapi_def = yaml.load(file('app/static/openapi.yaml', 'r'))
-        app.logger.info('parsing swagger from static/openapi.yaml')
-
-    except IOError:
-        '''if we are not deployed, then simply use the template'''
-        openapi_def = yaml.load(file('openapi.template.yaml', 'r'))
-        app.logger.error('parsing swagger from openapi.template.yaml')
-
+    #inject the description into the docs
     with open("api-description.md", "r") as f:
         desc = f.read()
     openapi_def['info']['description'] = desc
@@ -225,11 +222,6 @@ def create_app(config_name):
     @app.route('/v%s/platform/swagger' % str(api_version))
     def serve_swagger(apiversion=api_version):
         return jsonify(openapi_def)
-
-
-    @app.route('/v%s/platform/docs' % str(api_version))
-    def render_redoc(apiversion=api_version):
-        return render_template('docs.html',api_version=apiversion)
 
     @app.route('/v%s/platform/docs/swagger-ui' % str(api_version))
     def render_swaggerui(apiversion=api_version):
@@ -254,10 +246,12 @@ def create_app(config_name):
             resp.headers.add('Access-Control-Allow-Origin', app.config['ALLOWED_ORIGINS'])
             resp.headers.add('Access-Control-Allow-Headers','Content-Type,Auth-Token')
             resp.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+            #Google cloud CDN must be explicity marked as public to be cached
             if do_not_cache(request):# do not cache in the browser
                 resp.headers.add('Cache-Control', "no-cache, must-revalidate, max-age=0")
             else:
-                resp.headers.add('Cache-Control', "no-transform, public, max-age=%i, s-maxage=%i"%(took*1800/1000, took*9000/1000))
+                cache = 30 * 24 * 60 * 60 #cache for 30 days
+                resp.headers.add('Cache-Control', "public, no-transform, max-age=%i"%(cache))
             return resp
 
         except Exception as e:

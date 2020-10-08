@@ -165,6 +165,27 @@ class SearchMetadataObject(object):
         #     self.data['search_metadata'] = self.search_metadata
 
 
+class TherapeuticArea(object):
+
+    def __init__(self):
+        self.data_version=Config.DATA_VERSION
+
+    def __str__(self):
+        return json.dumps(self.__dict__)
+
+    def add_therapeuticareas(self, res):
+        datatypes = []
+        index = 0
+        for bucket in res['aggregations']['therapeutic_labels']['buckets']:
+            datasources = {}
+            datasources['label'] = bucket['key']
+            datasources['code'] = res['aggregations']['therapeutic_codes']['buckets'][index]['key']
+            datatypes.append(datasources)
+            index=index+1
+
+        self.therapeuticareas = datatypes
+        self.total = str(index)
+
 class DataMetrics(object):
 
     def __init__(self):
@@ -188,7 +209,7 @@ class DataMetrics(object):
                 datasources[ds_bucket['key']]={'total':ds_bucket['doc_count']}
                 datatypes[bucket['key']]['datasources']=datasources
 
-        self.evidencestrings = dict(total = res['hits']['total'],
+        self.evidencestrings = dict(total = res['hits']['total']['value'],
                                     datatypes= datatypes)
 
     def add_associations(self, res, known_datatypes):
@@ -205,7 +226,7 @@ class DataMetrics(object):
                     pass
 
 
-        self.associations = dict(total = res['hits']['total'],
+        self.associations = dict(total = res['hits']['total']['value'],
                                  datatypes= datatypes)
 
 
@@ -226,10 +247,9 @@ class DataStats(object):
                 datasources[ds_bucket['key']]={'total':ds_bucket['doc_count']}
                 datatypes[bucket['key']]['datasources']=datasources
 
-        self.evidencestrings = dict(total = res['hits']['total'],
-                                    datatypes= datatypes)
+        self.evidencestrings = dict(datatypes= datatypes)
 
-    def add_associations(self, res, known_datatypes):
+    def add_associations(self, res, index_association_stats, known_datatypes):
         datatypes = {}
         for bucket in res['aggregations']['data']['buckets']:
             datatypes[bucket['key']]={'total':bucket['doc_count']}
@@ -243,7 +263,7 @@ class DataStats(object):
                     pass
 
 
-        self.associations = dict(total = res['hits']['total'],
+        self.associations = dict(total = index_association_stats,
                                  datatypes= datatypes)
 
     def add_key_value(self, key, value):
