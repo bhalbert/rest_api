@@ -237,7 +237,12 @@ def create_app(config_name):
     def after(resp):
         try:
             now = datetime.now()
-            took = int(round((now - g.request_start).total_seconds()))
+            took = (now - g.request_start).total_seconds()*1000
+            if took > 500:
+                cache_time = str(int(3600*took))# set cache to last one our for each second spent in the request
+                resp.headers.add('X-Accel-Expires', cache_time)
+            took = int(round(took))
+            resp.headers.add('X-API-Took', took)
             resp.headers.add('Access-Control-Allow-Origin', '*')
             resp.headers.add('Access-Control-Allow-Headers','Content-Type,Auth-Token')
             resp.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
